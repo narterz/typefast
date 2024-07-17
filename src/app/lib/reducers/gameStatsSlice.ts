@@ -1,19 +1,24 @@
-import { BestStats, Stats, UserStats } from "@/app/types"
+import { BestStats, ActiveGameStats, EndGameStats, UserStats } from "@/app/types"
 import { PayloadAction, createSlice } from "@reduxjs/toolkit"
 import { RootState } from "./store";
 
 export const initialState = {
-    stats: {
+    activeGameStats: {
+        currentSentence: 0,
+        highlightedWords: [[""]],
+        typedWords: [""]
+    },
+    endGameStats: {
         gameDuration: 0,
         wordsPerMin: 0,
         wordsCompleted: 0,
         grade: ""
-    } as Stats,
+    },
     bestStats: {
         bestDuration: 0,
         bestWordsPerMin: 0,
         bestGrade: ""
-    } as BestStats,
+    },
     gameActive: false
 } as UserStats
 
@@ -24,30 +29,39 @@ const gameStatsSlice = createSlice({
         toggleStartGame(state, action: PayloadAction<boolean>) {
             state.gameActive = action.payload
         },
-        getGameResults(state, action: PayloadAction<Stats>) {
-            state.stats = action.payload
+        getGameResults(state, action: PayloadAction<EndGameStats>) {
+            state.endGameStats = action.payload
         },
         setGameDuration(state, action: PayloadAction<number>) {
-            state.stats.gameDuration = action.payload
+            state.endGameStats.gameDuration = action.payload
         },
         getBestResults(state, action: PayloadAction<BestStats>) {
             state.bestStats = action.payload;
         },
         decrementTime(state) {
-            state.stats.gameDuration = state.stats.gameDuration - 1
+            state.endGameStats.gameDuration = state.endGameStats.gameDuration - 1
         },
         incrementTime(state) {
-            state.stats.gameDuration = state.stats.gameDuration + 1
+            state.endGameStats.gameDuration = state.endGameStats.gameDuration + 1
         },
         incrementWordsCompleted(state) {
-            state.stats.wordsCompleted = state.stats.wordsCompleted + 1
+            state.endGameStats.wordsCompleted = state.endGameStats.wordsCompleted + 1
         },
         decrementWordsCompleted(state) {
-            state.stats.wordsCompleted = state.stats.wordsCompleted - 1
+            state.endGameStats.wordsCompleted = state.endGameStats.wordsCompleted - 1
+        },
+        setHighlightedWords(state, action: PayloadAction<string[][]>){
+            state.activeGameStats.highlightedWords = action.payload;
+        },
+        endGame(state) {
+            state.endGameStats = initialState.endGameStats;
+            state.activeGameStats.currentSentence = 0;
+            state.activeGameStats.highlightedWords = [state.activeGameStats.highlightedWords[state.activeGameStats.currentSentence]];
+            state.gameActive  = false;
         },
         clearGameResults(state) {
-            state.stats = initialState.stats
-        }
+            state.endGameStats = initialState.endGameStats
+        },
     }
 });
 
@@ -60,7 +74,9 @@ export const {
     incrementTime,
     incrementWordsCompleted,
     decrementTime,
-    decrementWordsCompleted
+    decrementWordsCompleted,
+    endGame,
+    setHighlightedWords
 } = gameStatsSlice.actions;
 
 export default gameStatsSlice.reducer;
